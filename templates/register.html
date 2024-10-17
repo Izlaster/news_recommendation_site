@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Регистрация{% endblock %}
+{% block content %}
+    <h2>Регистрация</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.username.label }}<br>
+            {{ form.username(size=32) }}<br>
+        </div>
+        <div>
+            {{ form.email.label }}<br>
+            {{ form.email(size=32) }}<br>
+        </div>
+        <div>
+            {{ form.password.label }}<br>
+            {{ form.password(size=32) }}<br>
+        </div>
+        <div>
+            {{ form.confirm_password.label }}<br>
+            {{ form.confirm_password(size=32) }}<br>
+        </div>
+        <div>
+            <h3>Выберите ваши интересы</h3>
+            <div>
+                {{ form.politics() }} {{ form.politics.label }}<br>
+                {{ form.society() }} {{ form.society.label }}<br>
+                {{ form.ukraine() }} {{ form.ukraine.label }}<br>
+                {{ form.incidents() }} {{ form.incidents.label }}<br>
+                {{ form.economy() }} {{ form.economy.label }}<br>
+                {{ form.football() }} {{ form.football.label }}<br>
+                {{ form.cinema() }} {{ form.cinema.label }}<br>
+                {{ form.internet() }} {{ form.internet.label }}<br>
+                {{ form.business() }} {{ form.business.label }}<br>
+                {{ form.investigation() }} {{ form.investigation.label }}<br>
+                {{ form.science() }} {{ form.science.label }}<br>
+                {{ form.music() }} {{ form.music.label }}<br>
+            </div>
+        </div>
+        <div>
+            {{ form.submit() }}
+        </div>
+    </form>
+    
+    {% for error in form.errors %}
+        <div class="flash danger">{{ error }}</div>
+    {% endfor %}
+{% endblock %}
