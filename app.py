@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from forms import RegistrationForm, LoginForm
-from models import db, User
+from models import db, User, Log
 
 app = Flask(__name__)
 app.config.from_object('config.Config')
@@ -45,16 +45,26 @@ def home():
 
     return render_template('home.html', tags=tags, news=latest_news)
 
-@app.route('/like/<int:news_index>', methods=['POST'])
-def like_news(news_index):
-    # Проверяем, существует ли индекс в DataFrame
-    if 0 <= news_index < len(news_df):
-        news_df.at[news_index, 'likes'] += 1  # Увеличиваем количество лайков
-        print("lololololololololol")
-        print(news_df.at[news_index, 'likes'])
-        return redirect(url_for('home'))  # Перенаправление на главную страницу
-    else:
-        return "Новость не найдена", 404  # Обработка случая, когда новость не найдена
+def log_action(email, article_title, action):
+    with 
+    new_log = Log(username=email, article_title=article_title, action=action)
+    db.session.add(new_log)
+    db.session.commit()
+
+@app.route('/track_click/<path:url>')
+def track_click(url):
+    email = current_user.email if current_user.is_authenticated else 'Гость'
+    log_action(email, url, 'view')
+    return redirect(url)
+
+@app.route('/like_news/<path:url>', methods=['POST'])
+def like_news(url):
+    news_df[news_df["url"] == url]["likes"] += 1   # Получите статью по индексу
+
+    email = current_user.email if current_user.is_authenticated else 'Гость'
+    log_action(email, url, 'like')
+
+    return redirect(url_for('home'))
 
 
 @app.route('/register', methods=['GET', 'POST'])
