@@ -45,8 +45,7 @@ def home():
 
     return render_template('home.html', tags=tags, news=latest_news)
 
-def log_action(email, article_title, action):
-    with 
+def log_action(email, article_title, action): 
     new_log = Log(username=email, article_title=article_title, action=action)
     db.session.add(new_log)
     db.session.commit()
