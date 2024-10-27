@@ -1,3 +1,37 @@
+<script>
+    // Функция для асинхронного отслеживания кликов
+    function trackClick(url) {
+        fetch(`/track_click/${url}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+            })
+            .catch(error => console.error('Ошибка:', error));
+    }
+
+    // Функция для асинхронного проставления лайков
+    function likeNews(url) {
+        fetch(`/like_news/${url}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Обновляем состояние кнопки, чтобы отразить, что лайк был поставлен
+                    const likeButton = document.querySelector(`#like-button-${url}`);
+                    likeButton.textContent = "👍 Лайк поставлен";
+                    likeButton.style.backgroundColor = "#4CAF50"; // Зеленый цвет для индикации
+                    likeButton.style.color = "white"; // Цвет текста
+                    likeButton.disabled = true; // Отключить кнопку после того, как лайк был поставлен
+                }
+            })
+            .catch(error => console.error('Ошибка:', error));
+    }
+</script>
+
 {% extends 'base.html' %}
 {% block content %}
 <h2>Добро пожаловать, {% if current_user.is_authenticated %}{{ current_user.username }}{% else %}Гость{% endif %}</h2>
@@ -19,11 +53,12 @@
 <ul>
     {% for index, article in news.iterrows() %}
     <li>
-        <a href="{{ url_for('track_click', url=article['url']) }}">{{ article['title'] }}</a>
-        <form action="{{ url_for('like_news', url=article['url']) }}" method="POST">
-            Теги: {{ article[tags] }}
-            <ul align="right"><button type="submit">👍</button> {{ article['likes'] }}</ul>
-            <p></p>
+        <a href="{{ article['url'] }}" onclick="trackClick('{{ article['url'] }}');">{{ article['title'] }}</a>
+        <form onsubmit="likeNews('{{ article['url'] }}'); return false;">
+            <ul align="right">
+                <button type="submit">👍</button>
+                <span id="likes-count-{{ article['url'] }}"></span>
+            </ul>
         </form>
     </li>
     {% endfor %}
