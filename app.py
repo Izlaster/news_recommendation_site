@@ -12,6 +12,7 @@ from flask_login import (
 from werkzeug.security import generate_password_hash, check_password_hash
 from forms import RegistrationForm, LoginForm
 from models import db, User, Log
+from create_model import make_recommendation
 
 app = Flask(__name__)
 app.config.from_object("config.Config")
@@ -25,11 +26,26 @@ login_manager.login_view = (
 )
 
 news_df = pd.read_csv("dataset/lenta-ru-news-likes.csv", low_memory=False)
-
+top_recommendations = make_recommendation('instance/site.db')
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))  # Загружаем пользователя по ID
+
+
+def recomend_is(user_id, df):
+    # Проверка наличия пользователя
+    if user_id not in df['userID'].values:
+        print(df['userID'].unique())
+        print(f'User {user_id} not found in the dataset.')
+        return False
+    return True
+    
+def get_recommendations(user_id):
+    # Получаем рекомендации для данного пользователя
+    user_recommendations = top_recommendations[top_recommendations['userID'] == user_id].head(10)
+    recommended_links = user_recommendations['itemID'].tolist()
+    return recommended_links
 
 
 @app.route("/")
@@ -37,15 +53,17 @@ def load_user(user_id):
 def home():
     tags = current_user.tags.split(", ") if current_user.tags else []
 
-    # if recomend_is(): Отдаем рекомендации
-
     # Отфильтровываем новости по интересам пользователя
     filtered_news = news_df[news_df["tags"].isin(tags)]
 
+    if recomend_is(current_user.email, top_recommendations):
+        recs = get_recommendations(current_user.email)
+        latest_news = news_df[news_df["url"].isin(recs)]
+
     # Проверяем, есть ли у нас данные
-    if not filtered_news.empty:
+    elif not filtered_news.empty:
         # Преобразуем колонку 'date' в datetime, если это еще не сделано
-        filtered_news["date"] = pd.to_datetime(filtered_news["date"], errors="coerce")
+        filtered_news.loc[:, "date"] = pd.to_datetime(filtered_news["date"], errors="coerce")
 
         # Удаляем строки с недопустимыми датами
         filtered_news = filtered_news.dropna(subset=["date"])
